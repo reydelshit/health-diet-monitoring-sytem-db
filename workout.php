@@ -10,8 +10,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 switch ($method) {
     case "GET":
 
-        $user_id_specific_user = $_GET['user_id'];
-
+        // $user_id_specific_user = $_GET['user_id'];
 
         $sql = "SELECT * FROM workout_plans";
         $path = explode('/', $_SERVER['REQUEST_URI']);
@@ -20,33 +19,41 @@ switch ($method) {
             $stmt = $conn->prepare($sql);
             $stmt->bindParam(':workout_id', $path[3]);
             $stmt->execute();
-            $users = $stmt->fetch(PDO::FETCH_ASSOC);
-        }
-
-        if ($user_id_specific_user) {
-            $sql .= " WHERE user_id = :user_id";
-            $stmt = $conn->prepare($sql);
-            $stmt->bindParam(':user_id', $user_id_specific_user);
-            $stmt->execute();
-            $workout_plans = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $workout_plans = $stmt->fetch(PDO::FETCH_ASSOC);
         } else {
             $stmt = $conn->prepare($sql);
             $stmt->execute();
             $workout_plans = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
+        if (isset($user_id_specific_user)) {
+            $sql .= " WHERE user_id = :user_id";
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam(':user_id', $user_id_specific_user);
+            $stmt->execute();
+            $workout_plans = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        }
+        // else {
+        //     $stmt = $conn->prepare($sql);
+        //     $stmt->execute();
+        //     $workout_plans = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // }
+
         echo json_encode($workout_plans);
         break;
 
     case "POST":
         $workout_plans = json_decode(file_get_contents('php://input'));
-        $sql = "INSERT INTO workout_plans (workout_id, workout_plans_name, workout_mins, workout_when, created_at, user_id) VALUES (null, :workout_plans_name, :workout_mins, :workout_when, :created_at, :user_id)";
+        $sql = "INSERT INTO workout_plans (workout_id, workout_plans_name, workout_description, workout_mins, workout_when, created_at, workout_status, user_id) VALUES (null, :workout_plans_name, :workout_description, :workout_mins, :workout_when, :created_at, :workout_status, :user_id)";
         $stmt = $conn->prepare($sql);
         $created_at = date('Y-m-d');
+        $workout_status = 'Ongoing';
         $stmt->bindParam(':workout_plans_name', $workout_plans->workout_plans_name);
+        $stmt->bindParam(':workout_description', $workout_plans->workout_description);
         $stmt->bindParam(':workout_mins', $workout_plans->workout_mins);
         $stmt->bindParam(':workout_when', $workout_plans->workout_when);
         $stmt->bindParam(':created_at', $created_at);
+        $stmt->bindParam(':workout_status', $workout_status);
         $stmt->bindParam(':user_id', $workout_plans->user_id);
 
         if ($stmt->execute()) {
@@ -65,18 +72,14 @@ switch ($method) {
         break;
 
     case "PUT":
-        $user = json_decode(file_get_contents('php://input'));
-        $sql = "UPDATE workout_plans SET name= :name, email=:email, birthday=:birthday, gender=:gender, weight=:weight, height=:height, updated_at=:updated_at WHERE workout_id = :workout_id";
+        $workout_plans = json_decode(file_get_contents('php://input'));
+        $sql = "UPDATE workout_plans SET workout_plans_name=:workout_plans_name, workout_description=:workout_description, workout_mins=:workout_mins, updated_at=:updated_at WHERE workout_id = :workout_id";
         $stmt = $conn->prepare($sql);
         $updated_at = date('Y-m-d');
-        $stmt->bindParam(':id', $user->id);
-        $stmt->bindParam(':name', $user->name);
-        $stmt->bindParam(':email', $user->email);
-        $stmt->bindParam(':birthday', $user->birthday);
-        $stmt->bindParam(':gender', $user->gender);
-
-        $stmt->bindParam(':height', $user->height);
-        $stmt->bindParam(':weight', $user->weight);
+        $stmt->bindParam(':workout_id', $workout_plans->id);
+        $stmt->bindParam(':workout_plans_name', $workout_plans->workout_plans_name);
+        $stmt->bindParam(':workout_description', $workout_plans->workout_description);
+        $stmt->bindParam(':workout_mins', $workout_plans->workout_mins);
         $stmt->bindParam(':updated_at', $updated_at);
 
         if ($stmt->execute()) {
@@ -99,17 +102,17 @@ switch ($method) {
         $path = explode('/', $_SERVER['REQUEST_URI']);
 
         $stmt = $conn->prepare($sql);
-        $stmt->bindParam(':workout_id', $path[2]);
+        $stmt->bindParam(':workout_id', $path[3]);
 
         if ($stmt->execute()) {
             $response = [
                 "status" => "success",
-                "message" => "User deleted successfully"
+                "message" => "Workout plans deleted successfully"
             ];
         } else {
             $response = [
                 "status" => "error",
-                "message" => "User deletion failed"
+                "message" => "Workout plans deletion failed"
             ];
         }
 }
