@@ -72,29 +72,55 @@ switch ($method) {
         break;
 
     case "PUT":
-        $workout_plans = json_decode(file_get_contents('php://input'));
-        $sql = "UPDATE workout_plans SET workout_plans_name=:workout_plans_name, workout_description=:workout_description, workout_mins=:workout_mins, updated_at=:updated_at WHERE workout_id = :workout_id";
-        $stmt = $conn->prepare($sql);
-        $updated_at = date('Y-m-d');
-        $stmt->bindParam(':workout_id', $workout_plans->id);
-        $stmt->bindParam(':workout_plans_name', $workout_plans->workout_plans_name);
-        $stmt->bindParam(':workout_description', $workout_plans->workout_description);
-        $stmt->bindParam(':workout_mins', $workout_plans->workout_mins);
-        $stmt->bindParam(':updated_at', $updated_at);
 
-        if ($stmt->execute()) {
-            $response = [
-                "status" => "success",
-                "message" => "User updated successfully"
-            ];
-        } else {
-            $response = [
-                "status" => "error",
-                "message" => "User update failed"
-            ];
+
+        $workout_plans = json_decode(file_get_contents('php://input'));
+        $indicator = $workout_plans->indicator;
+
+        if ($workout_plans->indicator === 'update_workout') {
+            $sql = "UPDATE workout_plans SET workout_plans_name=:workout_plans_name, workout_description=:workout_description, workout_mins=:workout_mins, updated_at=:updated_at WHERE workout_id = :workout_id";
+            $stmt = $conn->prepare($sql);
+            $updated_at = date('Y-m-d');
+            $stmt->bindParam(':workout_id', $workout_plans->id);
+            $stmt->bindParam(':workout_plans_name', $workout_plans->workout_plans_name);
+            $stmt->bindParam(':workout_description', $workout_plans->workout_description);
+            $stmt->bindParam(':workout_mins', $workout_plans->workout_mins);
+            $stmt->bindParam(':updated_at', $updated_at);
+
+            if ($stmt->execute()) {
+                $response = [
+                    "status" => "success",
+                    "message" => "User updated successfully"
+                ];
+            } else {
+                $response = [
+                    "status" => "error",
+                    "message" => "User update failed"
+                ];
+            }
         }
 
-        echo json_encode($response);
+
+        if ($indicator === 'update_workout_status') {
+            $sql = "UPDATE workout_plans SET workout_status = :workout_status WHERE workout_id = :workout_id";
+            $stmt2 = $conn->prepare($sql); // Use a different variable for the second query's prepared statement
+            $stmt2->bindParam(':workout_status', $workout_plans->workout_status);
+            $stmt2->bindParam(':workout_id', $workout_plans->workout_id);
+
+            if ($stmt2->execute()) {
+                $response = [
+                    "status" => "success",
+                    "message" => "Workout status update successfully"
+                ];
+            } else {
+                $response = [
+                    "status" => "error",
+                    "message" => "Workout status update failed"
+                ];
+            }
+            echo json_encode($response);
+        }
+
         break;
 
     case "DELETE":
