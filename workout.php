@@ -9,37 +9,32 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
     case "GET":
-
-        // $user_id_specific_user = $_GET['user_id'];
-
-        $sql = "SELECT * FROM workout_plans";
-        $path = explode('/', $_SERVER['REQUEST_URI']);
-        if (isset($path[3]) && is_numeric($path[3])) {
-            $sql .= " WHERE workout_id = :workout_id";
-            $stmt = $conn->prepare($sql);
-            $stmt->bindParam(':workout_id', $path[3]);
-            $stmt->execute();
-            $workout_plans = $stmt->fetch(PDO::FETCH_ASSOC);
-        } else {
-            $stmt = $conn->prepare($sql);
-            $stmt->execute();
-            $workout_plans = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (isset($_GET['user_id'])) {
+            $user_id_specific_user = $_GET['user_id'];
+            $sql = "SELECT * FROM workout_plans WHERE user_id = :user_id";
         }
 
-        if (isset($user_id_specific_user)) {
-            $sql .= " WHERE user_id = :user_id";
-            $stmt = $conn->prepare($sql);
-            $stmt->bindParam(':user_id', $user_id_specific_user);
-            $stmt->execute();
-            $workout_plans = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (isset($_GET['workout_id'])) {
+            $workout_specific_user = $_GET['workout_id'];
+            $sql = "SELECT * FROM workout_plans WHERE workout_id = :workout_id";
         }
-        // else {
-        //     $stmt = $conn->prepare($sql);
-        //     $stmt->execute();
-        //     $workout_plans = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        // }
 
-        echo json_encode($workout_plans);
+        if (isset($sql)) {
+            $stmt = $conn->prepare($sql);
+
+            if (isset($user_id_specific_user)) {
+                $stmt->bindParam(':user_id', $user_id_specific_user);
+            }
+
+            if (isset($workout_specific_user)) {
+                $stmt->bindParam(':workout_id', $workout_specific_user);
+            }
+
+            $stmt->execute();
+            $medical_history = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            echo json_encode($medical_history);
+        }
         break;
 
     case "POST":

@@ -10,44 +10,33 @@ $response = null;
 switch ($method) {
     case "GET":
 
-        $indicator = $_GET['indicator'];
-        $user_id_specific_user = $_GET['user_id'];
-        $medical_id_specific = $_GET['medical_id'];
-
-        $sql = "SELECT * FROM medical_history WHERE 1"; // Start with a basic query
-
-        if (isset($path[3]) && is_numeric($path[3])) {
-            $sql .= " AND medical_id = :medical_id";
+        if (isset($_GET['user_id'])) {
+            $user_id_specific_user = $_GET['user_id'];
+            $sql = "SELECT * FROM medical_history WHERE user_id = :user_id";
         }
 
-        if ($indicator === 'get-medical-history-by-user-id') {
-            $sql .= " AND user_id = :user_id";
+        // Check if 'medical_id' parameter is present in the URL
+        if (isset($_GET['medical_id'])) {
+            $medical_specific_user = $_GET['medical_id'];
+            $sql = "SELECT * FROM medical_history WHERE medical_id = :medical_id";
         }
 
-        if ($indicator === 'get-medical-history-by-id') {
-            $sql .= " AND medical_id = :medical_id";
+        if (isset($sql)) {
+            $stmt = $conn->prepare($sql);
+
+            if (isset($user_id_specific_user)) {
+                $stmt->bindParam(':user_id', $user_id_specific_user);
+            }
+
+            if (isset($medical_specific_user)) {
+                $stmt->bindParam(':medical_id', $medical_specific_user);
+            }
+
+            $stmt->execute();
+            $medical_history = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            echo json_encode($medical_history);
         }
-
-        $stmt = $conn->prepare($sql);
-
-        // Bind parameters if they are present
-        if (isset($path[3]) && is_numeric($path[3])) {
-            $stmt->bindParam(':medical_id', $path[3]);
-        }
-
-        if ($indicator === 'get-medical-history-by-user-id') {
-            $stmt->bindParam(':user_id', $user_id_specific_user);
-        }
-
-        if ($indicator === 'get-medical-history-by-id') {
-            $stmt->bindParam(':medical_id', $medical_id_specific);
-        }
-
-        $stmt->execute();
-        $medical_history = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        echo json_encode($medical_history);
-
         break;
 
     case "POST":
