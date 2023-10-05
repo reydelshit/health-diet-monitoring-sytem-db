@@ -10,36 +10,32 @@ $method = $_SERVER['REQUEST_METHOD'];
 switch ($method) {
     case "GET":
 
-        // $user_id_specific_user = $_GET['user_id'];
-
-        $sql = "SELECT * FROM water";
-        $path = explode('/', $_SERVER['REQUEST_URI']);
-        if (isset($path[3]) && is_numeric($path[3])) {
-            $sql .= " WHERE water_id = :water_id";
-            $stmt = $conn->prepare($sql);
-            $stmt->bindParam(':workout_id', $path[3]);
-            $stmt->execute();
-            $water_log = $stmt->fetch(PDO::FETCH_ASSOC);
-        } else {
-            $stmt = $conn->prepare($sql);
-            $stmt->execute();
-            $water_log = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (isset($_GET['user_id'])) {
+            $user_id_specific_user = $_GET['user_id'];
+            $sql = "SELECT * FROM water WHERE user_id = :user_id";
         }
 
-        if (isset($user_id_specific_user)) {
-            $sql .= " WHERE user_id = :user_id";
-            $stmt = $conn->prepare($sql);
-            $stmt->bindParam(':user_id', $user_id_specific_user);
-            $stmt->execute();
-            $water_log = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (isset($_GET['water_id'])) {
+            $water_specific_user = $_GET['water_id'];
+            $sql = "SELECT * FROM water WHERE water_id = :water_id";
         }
-        // else {
-        //     $stmt = $conn->prepare($sql);
-        //     $stmt->execute();
-        //     $water_log = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        // }
 
-        echo json_encode($water_log);
+        if (isset($sql)) {
+            $stmt = $conn->prepare($sql);
+
+            if (isset($user_id_specific_user)) {
+                $stmt->bindParam(':user_id', $user_id_specific_user);
+            }
+
+            if (isset($medical_specific_user)) {
+                $stmt->bindParam(':water_id', $water_specific_user);
+            }
+
+            $stmt->execute();
+            $sleep = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            echo json_encode($sleep);
+        }
         break;
 
     case "POST":

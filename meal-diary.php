@@ -10,31 +10,32 @@ $method = $_SERVER['REQUEST_METHOD'];
 switch ($method) {
     case "GET":
 
-        $user_id_specific_user = $_GET['id'];
-
-        $sql = "SELECT * FROM meal_diary";
-        $path = explode('/', $_SERVER['REQUEST_URI']);
-        if (isset($path[2]) && is_numeric($path[2])) {
-            $sql .= " WHERE id = :id";
-            $stmt = $conn->prepare($sql);
-            $stmt->bindParam(':id', $path[2]);
-            $stmt->execute();
-            $users = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (isset($_GET['user_id'])) {
+            $user_id_specific_user = $_GET['user_id'];
+            $sql = "SELECT * FROM meal_diary WHERE user_id = :user_id";
         }
 
-        if ($user_id_specific_user) {
-            $sql .= " WHERE user_id = :user_id";
-            $stmt = $conn->prepare($sql);
-            $stmt->bindParam(':user_id', $user_id_specific_user);
-            $stmt->execute();
-            $meal = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } else {
-            $stmt = $conn->prepare($sql);
-            $stmt->execute();
-            $meal = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (isset($_GET['meal_id'])) {
+            $medical_specific_user = $_GET['meal_id'];
+            $sql = "SELECT * FROM meal_diary WHERE meal_id = :meal_id";
         }
 
-        echo json_encode($meal);
+        if (isset($sql)) {
+            $stmt = $conn->prepare($sql);
+
+            if (isset($user_id_specific_user)) {
+                $stmt->bindParam(':user_id', $user_id_specific_user);
+            }
+
+            if (isset($medical_specific_user)) {
+                $stmt->bindParam(':meal_id', $medical_specific_user);
+            }
+
+            $stmt->execute();
+            $meal_diary = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            echo json_encode($meal_diary);
+        }
         break;
 
     case "POST":

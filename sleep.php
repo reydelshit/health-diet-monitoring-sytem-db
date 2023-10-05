@@ -10,32 +10,32 @@ $method = $_SERVER['REQUEST_METHOD'];
 switch ($method) {
     case "GET":
 
-        // $user_id_specific_user = $_GET['user_id'];
-
-        $sql = "SELECT * FROM sleep";
-        $path = explode('/', $_SERVER['REQUEST_URI']);
-        if (isset($path[3]) && is_numeric($path[3])) {
-            $sql .= " WHERE sleep_id = :sleep_id";
-            $stmt = $conn->prepare($sql);
-            $stmt->bindParam(':sleep_id', $path[3]);
-            $stmt->execute();
-            $sleep_log = $stmt->fetch(PDO::FETCH_ASSOC);
-        } else {
-            $stmt = $conn->prepare($sql);
-            $stmt->execute();
-            $sleep_log = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (isset($_GET['user_id'])) {
+            $user_id_specific_user = $_GET['user_id'];
+            $sql = "SELECT * FROM sleep WHERE user_id = :user_id";
         }
 
-        if (isset($user_id_specific_user)) {
-            $sql .= " WHERE user_id = :user_id";
-            $stmt = $conn->prepare($sql);
-            $stmt->bindParam(':user_id', $user_id_specific_user);
-            $stmt->execute();
-            $sleep_log = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (isset($_GET['sleep_id'])) {
+            $sleep_specific_user = $_GET['sleep_id'];
+            $sql = "SELECT * FROM sleep WHERE sleep_id = :sleep_id";
         }
 
+        if (isset($sql)) {
+            $stmt = $conn->prepare($sql);
 
-        echo json_encode($sleep_log);
+            if (isset($user_id_specific_user)) {
+                $stmt->bindParam(':user_id', $user_id_specific_user);
+            }
+
+            if (isset($medical_specific_user)) {
+                $stmt->bindParam(':sleep_id', $sleep_specific_user);
+            }
+
+            $stmt->execute();
+            $sleep = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            echo json_encode($sleep);
+        }
         break;
 
     case "POST":
