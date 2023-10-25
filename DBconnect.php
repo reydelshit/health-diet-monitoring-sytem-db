@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 class DbConnect
 {
     private $server = 'localhost';
-    private $dbname = 'hd-monitoring';
+    private $dbname = 'hd_monitoring';
     private $user = 'root';
     private $pass = '';
 

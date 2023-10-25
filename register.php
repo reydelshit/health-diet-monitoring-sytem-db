@@ -17,6 +17,9 @@ switch ($method) {
             $stmt->bindParam(':id', $path[3]);
             $stmt->execute();
             $users = $stmt->fetch(PDO::FETCH_ASSOC);
+            // if ($users && isset($users['image'])) {
+            //     $users['image'] = base64_encode($users['image']);
+            // }
         } else {
             $stmt = $conn->prepare($sql);
             $stmt->execute();
@@ -55,13 +58,14 @@ switch ($method) {
 
     case "PUT":
         $user = json_decode(file_get_contents('php://input'));
-        $sql = "UPDATE users SET name= :name, email=:email, birthday=:birthday, gender=:gender updated_at=:updated_at WHERE id = :id";
+        $sql = "UPDATE users SET name= :name, email=:email, birthday=:birthday, image=:image, gender=:gender, updated_at=:updated_at WHERE id = :id";
         $stmt = $conn->prepare($sql);
         $updated_at = date('Y-m-d');
         $stmt->bindParam(':id', $user->id);
         $stmt->bindParam(':name', $user->name);
         $stmt->bindParam(':email', $user->email);
         $stmt->bindParam(':birthday', $user->birthday);
+        $stmt->bindParam(':image', $user->image);
         $stmt->bindParam(':gender', $user->gender);
 
         // $stmt->bindParam(':height', $user->height);

@@ -11,7 +11,7 @@ switch ($method) {
     case "GET":
         $id = $_GET['id'];
 
-        $sql = "SELECT * FROM users WHERE id = :id AND isLoggedIn = 1";
+        $sql = "SELECT * FROM users WHERE id = :id";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':id', $id);
         $stmt->execute();

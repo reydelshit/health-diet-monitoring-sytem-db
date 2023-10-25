@@ -20,7 +20,6 @@ switch ($method) {
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         if ($users) {
-            // User found, update isLoggedIn and send a success response
             $sql = "UPDATE users SET isLoggedIn = 1 WHERE email = :email AND password = :password";
             $stmt = $conn->prepare($sql);
             $stmt->bindParam(':email', $email);
